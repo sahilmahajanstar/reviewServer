@@ -14,7 +14,7 @@ const port = 5000
 
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: 'https://62b5399134b18d2ae63d9c0d--transcendent-mooncake-b69ba6.netlify.app',
     optionsSuccessStatus: 200,
   })
 )
