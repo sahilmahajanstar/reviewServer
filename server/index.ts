@@ -14,7 +14,7 @@ const port = 5000
 
 app.use(
   cors({
-    origin: 'https://62b5399134b18d2ae63d9c0d--transcendent-mooncake-b69ba6.netlify.app',
+    origin: '*',
     optionsSuccessStatus: 200,
   })
 )
@@ -100,6 +100,11 @@ app.post('/upload', upload, function (req, res) {
 
 app.get('/read', upload, function (req, res) {
   const mainPath = path.join(__dirname, 'upload')
+  if(!fs.existsSync(mainPath)) 
+  res.send({
+    status: 'success',
+    data: [],
+  })
   const dir = fs.readdirSync(mainPath)
   let images: any[] = []
   for (let i = 0; i < dir.length; i++) {
