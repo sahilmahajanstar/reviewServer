@@ -38,7 +38,7 @@ var storage = multer.diskStorage({
 var upload = multer({ storage: storage }).array('images', 15)
 
 app.get('/', function (_, res) {
-  res.sendFile(path.join(__dirname, '/public/index.html'))
+  res.send('listening')
 })
 
 app.use(express.static('upload'))
