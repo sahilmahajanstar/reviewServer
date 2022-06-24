@@ -41,7 +41,7 @@ app.get('/', function (_, res) {
   res.send('listening')
 })
 
-app.use(express.static('upload'))
+app.use(express.static(path.join(__dirname, "upload")))
 app.use(express.static('public'))
 
 app.post('/upload', upload, function (req, res) {
@@ -61,7 +61,12 @@ app.post('/upload', upload, function (req, res) {
   
   const folder = path.join(__dirname, `/upload/${folderName}`)
   console.log(folder);
-  if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true })
+  try {
+
+    if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true })
+  } catch(err) {
+    console.log(err)
+  }
   const imageMetadata: any = { deviceLocation: geoPosParse, images: [] }
   const exif = new Exif.ExifImage()
   for (let i = 0; i < files.length; i++) {
