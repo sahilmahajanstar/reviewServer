@@ -1,14 +1,15 @@
 import Exif from 'exif'
+import NodeCache from 'node-cache'
 import bodyParser from 'body-parser'
 import cors from 'cors'
-import exif from 'exif'
 import express from 'express'
 import fs from 'fs'
 import multer from 'multer'
 import path from 'path'
 
 const app = express()
-let folderLen = 1
+const myCache = new NodeCache()
+myCache.set('folderLen', 1)
 const port = 5000
 
 app.use(
@@ -21,11 +22,7 @@ app.use(
 bodyParser.urlencoded({ extended: true })
 app.use(bodyParser.json({}))
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
-app.listen(port, () => {
+app.listen(process.env.PORT || port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 
@@ -41,7 +38,7 @@ var storage = multer.diskStorage({
 var upload = multer({ storage: storage }).array('images', 15)
 
 app.get('/', function (_, res) {
-  res.sendFile(__dirname + '/index.html')
+  res.sendFile(path.join(__dirname, '/public/index.html'))
 })
 
 app.use(express.static('upload'))
@@ -51,14 +48,16 @@ app.post('/upload', upload, function (req, res) {
   const geoPos = req.body.geoPos
   const files: Express.Multer.File[] = req.files as Express.Multer.File[]
   if (!files?.length) {
-      res.send({
-        status: 'error',
-        data: { message: 'file not found' },
-      })
-      return
+    res.send({
+      status: 'error',
+      data: { message: 'file not found' },
+    })
+    return
   }
   const geoPosParse = JSON.parse(geoPos || {})
-  const folderName= `folder${folderLen++}`
+  const folderLen = myCache.get<number>('folderLen') || 1
+  myCache.set('folderLen', folderLen + 1)
+  const folderName = `folder${folderLen}`
   const folder = path.join(__dirname, `/upload/${folderName}`)
   if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true })
   const imageMetadata: any = { deviceLocation: geoPosParse, images: [] }
@@ -102,19 +101,17 @@ app.post('/upload', upload, function (req, res) {
 app.get('/read', upload, function (req, res) {
   const mainPath = path.join(__dirname, 'upload')
   const dir = fs.readdirSync(mainPath)
-  let images:any[] = []
+  let images: any[] = []
   for (let i = 0; i < dir.length; i++) {
     const json = fs.readFileSync(
       path.join(mainPath, dir[i], 'info.json'),
       'utf-8'
     )
-    const parseObj = JSON.parse(json||'{}')
+    const parseObj = JSON.parse(json || '{}')
     images = images.concat(parseObj.images)
   }
-  console.log(images);
-  
   res.send({
     status: 'success',
-    data: images
+    data: images,
   })
 })
