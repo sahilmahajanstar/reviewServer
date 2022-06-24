@@ -58,7 +58,9 @@ app.post('/upload', upload, function (req, res) {
   const folderLen = myCache.get<number>('folderLen') || 1
   myCache.set('folderLen', folderLen + 1)
   const folderName = `folder${folderLen}`
+  
   const folder = path.join(__dirname, `/upload/${folderName}`)
+  console.log(folder);
   if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true })
   const imageMetadata: any = { deviceLocation: geoPosParse, images: [] }
   const exif = new Exif.ExifImage()
